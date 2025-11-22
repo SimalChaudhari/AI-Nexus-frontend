@@ -1,0 +1,99 @@
+import Alert from '@mui/material/Alert';
+import { useTheme } from '@mui/material/styles';
+
+import { usePathname } from 'src/routes/hooks';
+
+import { useBoolean } from 'src/hooks/use-boolean';
+import { useSettingsContext } from 'src/components/settings';
+
+import { Main } from './main';
+import { NavMobile } from './nav/mobile';
+import { NavDesktop } from './nav/desktop';
+import { Footer, HomeFooter } from './footer';
+import { HeaderBase } from '../core/header-base';
+import { LayoutSection } from '../core/layout-section';
+import { navData as mainNavData } from '../config-nav-main';
+import { _account } from '../config-nav-account';
+
+// ----------------------------------------------------------------------
+
+export function MainLayout({ sx, data, children }) {
+  const theme = useTheme();
+
+  const pathname = usePathname();
+
+  const mobileNavOpen = useBoolean();
+
+  const settings = useSettingsContext();
+
+  const homePage = pathname === '/';
+
+  const layoutQuery = 'md';
+
+  const navData = data?.nav ?? mainNavData;
+
+  return (
+    <>
+      <NavMobile data={navData} open={mobileNavOpen.value} onClose={mobileNavOpen.onFalse} />
+
+      <LayoutSection
+        /** **************************************
+         * Header
+         *************************************** */
+        headerSection={
+          <HeaderBase
+            layoutQuery={layoutQuery}
+            onOpenNav={mobileNavOpen.onTrue}
+            data={{
+              nav: navData,
+              account: _account,
+            }}
+            slotsDisplay={{
+              account: false,
+              helpLink: false,
+              contacts: false,
+              searchbar: false,
+              workspaces: false,
+              localization: false,
+              notifications: false,
+            }}
+            slots={{
+              topArea: (
+                <Alert severity="info" sx={{ display: 'none', borderRadius: 0 }}>
+                  This is an info Alert.
+                </Alert>
+              ),
+              leftAreaEnd: (
+                <NavDesktop
+                  data={navData}
+                  sx={{
+                    display: 'none',
+                    [theme.breakpoints.up(layoutQuery)]: {
+                      ml: 2.5,
+                      display: 'flex',
+                    },
+                  }}
+                />
+              ),
+            }}
+          />
+        }
+        /** **************************************
+         * Footer
+         *************************************** */
+        footerSection={homePage ? <HomeFooter /> : <Footer layoutQuery={layoutQuery} />}
+        /** **************************************
+         * Style
+         *************************************** */
+        cssVars={{
+          '--layout-dashboard-content-pt': settings.compactLayout ? theme.spacing(1) : theme.spacing(2),
+          '--layout-dashboard-content-pb': settings.compactLayout ? theme.spacing(8) : theme.spacing(10),
+          '--layout-dashboard-content-px': settings.compactLayout ? theme.spacing(5) : theme.spacing(3),
+        }}
+        sx={sx}
+      >
+        <Main>{children}</Main>
+      </LayoutSection>
+    </>
+  );
+}
