@@ -92,7 +92,7 @@ export function HeaderBase({
             {slots?.leftAreaStart}
 
             {/* -- Menu button -- */}
-            {menuButton && (
+            {/* {menuButton && (
               <MenuButton
                 data-slot="menu-button"
                 onClick={onOpenNav}
@@ -102,7 +102,17 @@ export function HeaderBase({
                   [theme.breakpoints.up(layoutQuery)]: { display: 'none' },
                 }}
               />
-            )}
+            )} */}
+
+            <MenuButton
+                data-slot="menu-button"
+                onClick={onOpenNav}
+                sx={{
+                  mr: 1,
+                  ml: -1,
+                  // [theme.breakpoints.up(layoutQuery)]: { display: 'none' },
+                }}
+              />
 
             {/* -- Logo -- */}
             <Logo data-slot="logo" sx={{ pr: 2 }} />

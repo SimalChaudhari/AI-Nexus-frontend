@@ -27,10 +27,11 @@ export function NavList({ data }) {
   const pathname = usePathname();
 
   const [openMenu, setOpenMenu] = useState(false);
+  // const [openMenu, setOpenMenu] = useState(true);
 
   const active = useActiveLink(data.path, !!data.children);
 
-  const [clientRect, setClientRect] = useState({ top: 0, height: 0 });
+  const [clientRect, setClientRect] = useState({ top: 0, height: 0, left: 0, width: 0 });
 
   useEffect(() => {
     if (openMenu) {
@@ -47,6 +48,7 @@ export function NavList({ data }) {
 
   const handleCloseMenu = useCallback(() => {
     setOpenMenu(false);
+    // setOpenMenu(true);
   }, []);
 
   const renderNavItem = (
@@ -71,7 +73,7 @@ export function NavList({ data }) {
 
     if (element) {
       const rect = element.getBoundingClientRect();
-      setClientRect({ top: rect.top, height: rect.height });
+      setClientRect({ top: rect.top, height: rect.height, left: rect.left, width: rect.width });
     }
   }, []);
 
@@ -97,13 +99,15 @@ export function NavList({ data }) {
                 onMouseEnter={handleOpenMenu}
                 onMouseLeave={handleCloseMenu}
                 sx={{
+                  // pt: 0.5,
                   pt: 0.5,
-                  left: 0,
-                  right: 0,
-                  mx: 'auto',
+                  left: Math.round(clientRect.left),
                   position: 'fixed',
                   zIndex: theme.zIndex.modal,
-                  maxWidth: theme.breakpoints.values.lg,
+                  // minWidth: 120,
+                  // minWidth: 'auto',
+                  minWidth: 'auto',
+                  width: 'auto',
                   top: Math.round(clientRect.top + clientRect.height),
                 }}
               >
@@ -111,16 +115,25 @@ export function NavList({ data }) {
                   component="nav"
                   sx={{
                     ...paper({ theme, dropdown: true }),
-                    borderRadius: 2,
-                    p: theme.spacing(5, 1, 1, 4),
+                    borderRadius: 1,
+                    // p: theme.spacing(5, 1, 1, 4),
+                    // padding: '0px 8px 8px 20px',
+                    padding: '8px 16px',
+                    pt: 0,
+                    minWidth: 160,
+                    width: 'auto',
                   }}
                 >
                   <NavUl
                     sx={{
-                      gap: 3,
-                      width: 1,
-                      flexWrap: 'wrap',
-                      flexDirection: 'row',
+                      // gap: 3,
+                      // width: 1,
+                      // flexWrap: 'wrap',
+                      // flexDirection: 'row',
+
+                      gap: 1,
+                      width: 'auto',
+                      flexDirection: 'column',
                     }}
                   >
                     {data.children.map((list) => (
@@ -162,13 +175,15 @@ function NavSubList({ data, subheader, sx, ...other }) {
       {...other}
     >
       <NavUl>
-        <ListSubheader
-          disableSticky
-          disableGutters
-          sx={{ fontSize: 11, color: 'text.primary', typography: 'overline' }}
-        >
-          {subheader}
-        </ListSubheader>
+        {subheader && (
+          <ListSubheader
+            disableSticky
+            disableGutters
+            sx={{ fontSize: 11, color: 'text.primary', typography: 'overline' }}
+          >
+            {subheader}
+          </ListSubheader>
+        )}
 
         {data.map((item) =>
           isDashboard ? (

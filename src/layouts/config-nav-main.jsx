@@ -8,20 +8,48 @@ import { Iconify } from 'src/components/iconify';
 
 export const navData = [
   // { title: 'Home', path: '/home', icon: <Iconify width={22} icon="solar:home-2-bold-duotone" /> },
+  // {
+  //   title: 'Communities',
+  //   path: '/communities',
+  //   icon: <Iconify width={22} icon="solar:users-group-two-rounded-bold-duotone" />,
+  // },
+  // {
+  //   title: 'Learning',
+  //   path: paths.learning,
+  //   icon: <Iconify width={22} icon="solar:book-bold-duotone" />,
+  // },
+  // {
+  //   title: 'Workflows',
+  //   path: paths.workflows,
+  //   icon: <Iconify width={22} icon="solar:workflow-bold-duotone" />,
+  // },
+
   {
-    title: 'Communities',
+    title: 'Cateogories',
     path: '/communities',
     icon: <Iconify width={22} icon="solar:users-group-two-rounded-bold-duotone" />,
+    children: [
+      {
+        items: [
+          { title: 'Categories', path: '/communities' },
+          // { title: 'Resources', path: '/pages' },
+        ],
+      },
+    ],
   },
+
   {
-    title: 'Learning',
-    path: paths.learning,
+    title: 'Resources',
+    path: '/pages',
     icon: <Iconify width={22} icon="solar:book-bold-duotone" />,
-  },
-  {
-    title: 'Workflows',
-    path: paths.workflows,
-    icon: <Iconify width={22} icon="solar:workflow-bold-duotone" />,
+    children: [
+      {
+        items: [
+          { title: 'Learning', path: paths.learning },
+          { title: 'Workflows', path: paths.workflows },
+        ],
+      },
+    ],
   },
   // {
   //   title: 'Pages',
