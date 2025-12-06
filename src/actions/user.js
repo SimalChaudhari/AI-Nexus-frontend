@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { userService } from 'src/services/user.service';
 
 // ----------------------------------------------------------------------
@@ -7,6 +7,11 @@ export function useGetUser(userId) {
   const [user, setUser] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
   const [userError, setUserError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refresh = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     if (!userId) {
@@ -30,7 +35,7 @@ export function useGetUser(userId) {
     };
 
     fetchUser();
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   return useMemo(
     () => ({
@@ -38,8 +43,9 @@ export function useGetUser(userId) {
       userLoading,
       userError,
       userValidating: false,
+      refresh,
     }),
-    [user, userLoading, userError]
+    [user, userLoading, userError, refresh]
   );
 }
 

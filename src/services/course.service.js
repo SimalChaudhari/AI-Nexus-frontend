@@ -94,10 +94,14 @@ export const courseService = {
         formData.append('level', courseData.level);
       }
 
-      // Append image file if provided (not base64)
+      // Handle image: File = new upload, null = delete, undefined = keep existing
       if (imageFile instanceof File) {
         formData.append('image', imageFile);
+      } else if (imageFile === null) {
+        // Explicitly mark image for deletion
+        formData.append('image', '');
       }
+      // If imageFile is undefined, don't append anything (backend keeps existing)
 
       const response = await axios.put(`/courses/update/${id}`, formData, {
         headers: {

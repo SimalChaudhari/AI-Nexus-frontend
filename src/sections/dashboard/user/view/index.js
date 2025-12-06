@@ -9,3 +9,5 @@ export * from './user-create-view';
 export * from './user-profile-view';
 
 export * from './user-details-view';
+
+export * from './user-profile-detail-view';

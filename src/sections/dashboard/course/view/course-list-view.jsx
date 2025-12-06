@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
@@ -80,7 +81,7 @@ function applyFilter({ inputData, comparator, filters }) {
 
 export function CourseListView() {
   const dispatch = useDispatch();
-  const { courses: tableData, loading } = useSelector((state) => state.courses);
+  const { courses: tableData, loading, deleting } = useSelector((state) => state.courses);
   const table = useTable();
   const router = useRouter();
   const confirm = useBoolean();
@@ -264,16 +265,17 @@ export function CourseListView() {
           </>
         }
         action={
-          <Button
+          <LoadingButton
             variant="contained"
             color="error"
             onClick={() => {
               handleDeleteRows();
               confirm.onFalse();
             }}
+            loading={deleting}
           >
             Delete
-          </Button>
+          </LoadingButton>
         }
       />
     </>

@@ -52,11 +52,15 @@ const workflowSlice = createSlice({
   initialState: {
     workflows: [],
     loading: false,
+    creating: false,
+    updating: false,
+    deleting: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Fetch workflows
       .addCase(fetchWorkflows.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -69,17 +73,47 @@ const workflowSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // Create workflow
+      .addCase(createWorkflow.pending, (state) => {
+        state.creating = true;
+        state.error = null;
+      })
       .addCase(createWorkflow.fulfilled, (state, action) => {
+        state.creating = false;
         state.workflows.unshift(action.payload);
       })
+      .addCase(createWorkflow.rejected, (state, action) => {
+        state.creating = false;
+        state.error = action.payload;
+      })
+      // Update workflow
+      .addCase(updateWorkflow.pending, (state) => {
+        state.updating = true;
+        state.error = null;
+      })
       .addCase(updateWorkflow.fulfilled, (state, action) => {
+        state.updating = false;
         const index = state.workflows.findIndex((workflow) => workflow.id === action.payload.id);
         if (index !== -1) {
           state.workflows[index] = action.payload;
         }
       })
+      .addCase(updateWorkflow.rejected, (state, action) => {
+        state.updating = false;
+        state.error = action.payload;
+      })
+      // Delete workflow
+      .addCase(deleteWorkflow.pending, (state) => {
+        state.deleting = true;
+        state.error = null;
+      })
       .addCase(deleteWorkflow.fulfilled, (state, action) => {
+        state.deleting = false;
         state.workflows = state.workflows.filter((workflow) => workflow.id !== action.payload);
+      })
+      .addCase(deleteWorkflow.rejected, (state, action) => {
+        state.deleting = false;
+        state.error = action.payload;
       });
   },
 });

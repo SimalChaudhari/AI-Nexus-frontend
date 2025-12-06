@@ -52,11 +52,15 @@ const communitySlice = createSlice({
   initialState: {
     communities: [],
     loading: false,
+    creating: false,
+    updating: false,
+    deleting: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Fetch communities
       .addCase(fetchCommunities.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -69,17 +73,47 @@ const communitySlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // Create community
+      .addCase(createCommunity.pending, (state) => {
+        state.creating = true;
+        state.error = null;
+      })
       .addCase(createCommunity.fulfilled, (state, action) => {
+        state.creating = false;
         state.communities.unshift(action.payload); // Add new community to the beginning
       })
+      .addCase(createCommunity.rejected, (state, action) => {
+        state.creating = false;
+        state.error = action.payload;
+      })
+      // Update community
+      .addCase(updateCommunity.pending, (state) => {
+        state.updating = true;
+        state.error = null;
+      })
       .addCase(updateCommunity.fulfilled, (state, action) => {
+        state.updating = false;
         const index = state.communities.findIndex((community) => community.id === action.payload.id);
         if (index !== -1) {
           state.communities[index] = action.payload;
         }
       })
+      .addCase(updateCommunity.rejected, (state, action) => {
+        state.updating = false;
+        state.error = action.payload;
+      })
+      // Delete community
+      .addCase(deleteCommunity.pending, (state) => {
+        state.deleting = true;
+        state.error = null;
+      })
       .addCase(deleteCommunity.fulfilled, (state, action) => {
+        state.deleting = false;
         state.communities = state.communities.filter((community) => community.id !== action.payload);
+      })
+      .addCase(deleteCommunity.rejected, (state, action) => {
+        state.deleting = false;
+        state.error = action.payload;
       });
   },
 });

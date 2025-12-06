@@ -2,7 +2,7 @@ import { z as zod } from 'zod';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -44,9 +44,11 @@ export const NewCourseSchema = zod.object({
 export function CourseNewEditForm({ currentCourse }) {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { creating, updating } = useSelector((state) => state.courses);
 
   const [previewImage, setPreviewImage] = useState(currentCourse?.image || null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [imageDeleted, setImageDeleted] = useState(false);
 
   const defaultValues = useMemo(
     () => ({
@@ -79,8 +81,10 @@ export function CourseNewEditForm({ currentCourse }) {
     watch,
     handleSubmit,
     getValues,
-    formState: { isSubmitting },
   } = methods;
+
+  // Use Redux loading state instead of form's isSubmitting
+  const isSubmitting = currentCourse ? updating : creating;
 
   const freeOrPaid = watch('freeOrPaid');
 
@@ -105,6 +109,7 @@ export function CourseNewEditForm({ currentCourse }) {
       });
       setPreviewImage(img || null);
       setSelectedFile(null);
+      setImageDeleted(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCourse?.id, reset]);
@@ -133,6 +138,7 @@ export function CourseNewEditForm({ currentCourse }) {
 
       // Store the actual file for upload
       setSelectedFile(file);
+      setImageDeleted(false); // Reset delete flag when new file is selected
     },
     []
   );
@@ -141,7 +147,10 @@ export function CourseNewEditForm({ currentCourse }) {
   const handleDeleteImage = useCallback(() => {
     setPreviewImage(null);
     setSelectedFile(null);
-  }, []);
+    setImageDeleted(true);
+    // Clear the image field in the form
+    setValue('image', '', { shouldValidate: false });
+  }, [setValue]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -155,7 +164,10 @@ export function CourseNewEditForm({ currentCourse }) {
       };
 
       // Send file separately (not base64)
-      const imageFile = selectedFile || null;
+      // If image was deleted, send null explicitly
+      // If new file selected, send the file
+      // If neither, don't send anything (backend will keep existing image)
+      const imageFile = imageDeleted ? null : (selectedFile || undefined);
 
       if (currentCourse) {
         await dispatch(updateCourse({

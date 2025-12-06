@@ -10,6 +10,8 @@ import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Avatar from '@mui/material/Avatar';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { useSelector } from 'react-redux';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -27,6 +29,7 @@ export function CourseTableRow({ row, selected, onEditRow, onSelectRow, onDelete
   const router = useRouter();
   const confirm = useBoolean();
   const popover = usePopover();
+  const { deleting } = useSelector((state) => state.courses);
 
   return (
     <>
@@ -133,9 +136,14 @@ export function CourseTableRow({ row, selected, onEditRow, onSelectRow, onDelete
         title="Delete"
         content="Are you sure want to delete?"
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
+          <LoadingButton
+            variant="contained"
+            color="error"
+            onClick={onDeleteRow}
+            loading={deleting}
+          >
             Delete
-          </Button>
+          </LoadingButton>
         }
       />
     </>

@@ -40,6 +40,14 @@ export const userService = {
       return users.map(transformUser);
     } catch (error) {
       console.error('Error fetching users:', error);
+      // Handle connection errors more gracefully
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      // Handle network errors
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
       throw error;
     }
   },
@@ -51,6 +59,12 @@ export const userService = {
       return transformUser(user);
     } catch (error) {
       console.error('Error fetching user:', error);
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
       throw error;
     }
   },
@@ -62,6 +76,12 @@ export const userService = {
       return transformUser(user);
     } catch (error) {
       console.error('Error creating user:', error);
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
       throw error;
     }
   },
@@ -73,6 +93,12 @@ export const userService = {
       return transformUser(user);
     } catch (error) {
       console.error('Error updating user:', error);
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
       throw error;
     }
   },
@@ -85,6 +111,12 @@ export const userService = {
       return transformUser(user);
     } catch (error) {
       console.error('Error updating user status:', error);
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
       throw error;
     }
   },
@@ -95,6 +127,12 @@ export const userService = {
       return response.data;
     } catch (error) {
       console.error('Error deleting user:', error);
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
       throw error;
     }
   },

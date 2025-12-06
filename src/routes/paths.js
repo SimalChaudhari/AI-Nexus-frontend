@@ -13,6 +13,7 @@ const ROOTS = {
   AUTH_DEMO: '/auth-demo',
   DASHBOARD: '/dashboard',
   ADMIN: '/admin',
+  USER: '/user',
 };
 
 // ----------------------------------------------------------------------
@@ -152,12 +153,18 @@ export const paths = {
       new: `${ROOTS.ADMIN}/user/new`,
       list: `${ROOTS.ADMIN}/user/list`,
       cards: `${ROOTS.DASHBOARD}/user/cards`,
-      profile: `${ROOTS.DASHBOARD}/user/profile`,
+      profile: `${ROOTS.DASHBOARD}/user/profile`, // For regular users (User role)
       account: `${ROOTS.DASHBOARD}/user/account`,
       details: (id) => `${ROOTS.ADMIN}/user/${id}`,
       edit: (id) => `${ROOTS.ADMIN}/user/${id}/edit`,
       demo: {
         edit: `${ROOTS.DASHBOARD}/user/${MOCK_ID}/edit`,
+      },
+    },
+    // Admin-specific user routes
+    admin: {
+      user: {
+        profile: `${ROOTS.ADMIN}/user/profile`, // For admin users
       },
     },
     product: {
@@ -218,6 +225,11 @@ export const paths = {
       },
     },
   },
+  // USER (for regular users - User role)
+  user: {
+    root: ROOTS.USER,
+    profile: `${ROOTS.USER}/profile`,
+  },
   // ADMIN
   admin: {
     root: ROOTS.ADMIN,
@@ -225,6 +237,7 @@ export const paths = {
       root: `${ROOTS.ADMIN}/user`,
       new: `${ROOTS.ADMIN}/user/new`,
       list: `${ROOTS.ADMIN}/user/list`,
+      profile: `${ROOTS.ADMIN}/user/profile`,
       details: (id) => `${ROOTS.ADMIN}/user/${id}`,
       edit: (id) => `${ROOTS.ADMIN}/user/${id}/edit`,
     },

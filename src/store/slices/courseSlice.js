@@ -52,11 +52,15 @@ const courseSlice = createSlice({
   initialState: {
     courses: [],
     loading: false,
+    creating: false,
+    updating: false,
+    deleting: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Fetch courses
       .addCase(fetchCourses.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -69,17 +73,47 @@ const courseSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // Create course
+      .addCase(createCourse.pending, (state) => {
+        state.creating = true;
+        state.error = null;
+      })
       .addCase(createCourse.fulfilled, (state, action) => {
+        state.creating = false;
         state.courses.unshift(action.payload); // Add new course to the beginning
       })
+      .addCase(createCourse.rejected, (state, action) => {
+        state.creating = false;
+        state.error = action.payload;
+      })
+      // Update course
+      .addCase(updateCourse.pending, (state) => {
+        state.updating = true;
+        state.error = null;
+      })
       .addCase(updateCourse.fulfilled, (state, action) => {
+        state.updating = false;
         const index = state.courses.findIndex((course) => course.id === action.payload.id);
         if (index !== -1) {
           state.courses[index] = action.payload;
         }
       })
+      .addCase(updateCourse.rejected, (state, action) => {
+        state.updating = false;
+        state.error = action.payload;
+      })
+      // Delete course
+      .addCase(deleteCourse.pending, (state) => {
+        state.deleting = true;
+        state.error = null;
+      })
       .addCase(deleteCourse.fulfilled, (state, action) => {
+        state.deleting = false;
         state.courses = state.courses.filter((course) => course.id !== action.payload);
+      })
+      .addCase(deleteCourse.rejected, (state, action) => {
+        state.deleting = false;
+        state.error = action.payload;
       });
   },
 });

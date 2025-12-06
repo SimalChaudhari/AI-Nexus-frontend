@@ -53,6 +53,10 @@ export const updateUserStatus = createAsyncThunk(
 const initialState = {
   users: [],
   loading: false,
+  creating: false,
+  updating: false,
+  deleting: false,
+  updatingStatus: false,
   error: null,
 };
 
@@ -81,60 +85,60 @@ const userSlice = createSlice({
       })
       // Create user
       .addCase(createUser.pending, (state) => {
-        state.loading = true;
+        state.creating = true;
         state.error = null;
       })
       .addCase(createUser.fulfilled, (state, action) => {
-        state.loading = false;
+        state.creating = false;
         state.users.push(action.payload);
       })
       .addCase(createUser.rejected, (state, action) => {
-        state.loading = false;
+        state.creating = false;
         state.error = action.payload;
       })
       // Update user
       .addCase(updateUser.pending, (state) => {
-        state.loading = true;
+        state.updating = true;
         state.error = null;
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        state.loading = false;
+        state.updating = false;
         const index = state.users.findIndex((user) => user.id === action.payload.id);
         if (index !== -1) {
           state.users[index] = action.payload;
         }
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.loading = false;
+        state.updating = false;
         state.error = action.payload;
       })
       // Delete user
       .addCase(deleteUser.pending, (state) => {
-        state.loading = true;
+        state.deleting = true;
         state.error = null;
       })
       .addCase(deleteUser.fulfilled, (state, action) => {
-        state.loading = false;
+        state.deleting = false;
         state.users = state.users.filter((user) => user.id !== action.payload);
       })
       .addCase(deleteUser.rejected, (state, action) => {
-        state.loading = false;
+        state.deleting = false;
         state.error = action.payload;
       })
       // Update user status
       .addCase(updateUserStatus.pending, (state) => {
-        state.loading = true;
+        state.updatingStatus = true;
         state.error = null;
       })
       .addCase(updateUserStatus.fulfilled, (state, action) => {
-        state.loading = false;
+        state.updatingStatus = false;
         const index = state.users.findIndex((user) => user.id === action.payload.id);
         if (index !== -1) {
           state.users[index] = action.payload;
         }
       })
       .addCase(updateUserStatus.rejected, (state, action) => {
-        state.loading = false;
+        state.updatingStatus = false;
         state.error = action.payload;
       });
   },
