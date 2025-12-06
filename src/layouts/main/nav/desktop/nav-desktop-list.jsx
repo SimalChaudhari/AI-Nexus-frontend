@@ -118,7 +118,9 @@ export function NavList({ data }) {
                     borderRadius: 1,
                     // p: theme.spacing(5, 1, 1, 4),
                     // padding: '0px 8px 8px 20px',
-                    padding: '8px 16px',
+                    // padding: '8px 16px',
+                    padding: '8px 0px 8px 0px',
+                    // backgroundColor: 'green',
                     pt: 0,
                     minWidth: 160,
                     width: 'auto',
@@ -134,6 +136,7 @@ export function NavList({ data }) {
                       gap: 1,
                       width: 'auto',
                       flexDirection: 'column',
+                      // backgroundColor: 'red',
                     }}
                   >
                     {data.children.map((list) => (
@@ -174,7 +177,9 @@ function NavSubList({ data, subheader, sx, ...other }) {
       }}
       {...other}
     >
-      <NavUl>
+      <NavUl sx={{
+        // backgroundColor: 'pink !important',
+        width: '100% !important' }}>
         {subheader && (
           <ListSubheader
             disableSticky
@@ -187,12 +192,19 @@ function NavSubList({ data, subheader, sx, ...other }) {
 
         {data.map((item) =>
           isDashboard ? (
-            <NavLi key={item.title} sx={{ mt: 1.5 }}>
+            <NavLi key={item.title} sx={{ mt: 1.5,
+            // backgroundColor: 'purple !important'
+             }}>
               <NavItemDashboard path={item.path} />
             </NavLi>
           ) : (
-            <NavLi key={item.title} sx={{ mt: 1.5 }}>
+            <NavLi key={item.title} sx={{ mt: 1.5, width:"fullWidth !important",
+            // , backgroundColor: 'blue !important'
+             }}>
               <NavItem
+                sx={{
+                  // backgroundColor: 'yellow',
+                   maxWidth: 'fullWidth !important', py:0.5, px:2.5 }}
                 subItem
                 title={item.title}
                 path={item.path}

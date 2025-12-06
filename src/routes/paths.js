@@ -25,7 +25,28 @@ export const paths = {
   about: '/about-us',
   contact: '/contact-us',
   faqs: '/faqs',
+  categories: '/categories',
   communities: '/communities',
+  announcements: '/announcements',
+  announcement: {
+    root: '/announcements',
+    details: (id) => `/announcements/${id}`,
+  },
+  questions: '/questions',
+  question: {
+    root: '/questions',
+    details: (id) => `/questions/${id}`,
+  },
+  tutorials: '/tutorials',
+  tutorial: {
+    root: '/tutorials',
+    details: (id) => `/tutorials/${id}`,
+  },
+  builtWith: '/built-with',
+  builtWithProject: {
+    root: '/built-with',
+    details: (id) => `/built-with/${id}`,
+  },
   home: '/home',
   learning: '/learning',
   learningCourse: {

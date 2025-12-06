@@ -11,8 +11,17 @@ import { PublicGuard } from 'src/auth/guard';
 // ----------------------------------------------------------------------
 
 const HomePage = lazy(() => import('src/pages/home'));
+const CategoriesPage = lazy(() => import('src/pages/categories'));
 const CommunitiesPage = lazy(() => import('src/pages/communities'));
 const CommunityDetailPage = lazy(() => import('src/pages/communities/detail'));
+const AnnouncementsPage = lazy(() => import('src/pages/announcements'));
+const AnnouncementDetailPage = lazy(() => import('src/pages/announcements/detail'));
+const QuestionsPage = lazy(() => import('src/pages/questions'));
+const QuestionDetailPage = lazy(() => import('src/pages/questions/detail'));
+const TutorialsPage = lazy(() => import('src/pages/tutorials'));
+const TutorialDetailPage = lazy(() => import('src/pages/tutorials/detail'));
+const BuiltWithPage = lazy(() => import('src/pages/built-with'));
+const BuiltWithDetailPage = lazy(() => import('src/pages/built-with/detail'));
 const FaqsPage = lazy(() => import('src/pages/faqs'));
 const AboutPage = lazy(() => import('src/pages/about-us'));
 const ContactPage = lazy(() => import('src/pages/contact-us'));
@@ -61,10 +70,42 @@ export const mainRoutes = [
             element: <HomePage />,
           },
           {
+            path: 'categories',
+            element: <CategoriesPage />,
+          },
+          {
             path: 'communities',
             children: [
               { element: <CommunitiesPage />, index: true },
               { path: ':id', element: <CommunityDetailPage /> },
+            ],
+          },
+          {
+            path: 'announcements',
+            children: [
+              { element: <AnnouncementsPage />, index: true },
+              { path: ':id', element: <AnnouncementDetailPage /> },
+            ],
+          },
+          {
+            path: 'questions',
+            children: [
+              { element: <QuestionsPage />, index: true },
+              { path: ':id', element: <QuestionDetailPage /> },
+            ],
+          },
+          {
+            path: 'tutorials',
+            children: [
+              { element: <TutorialsPage />, index: true },
+              { path: ':id', element: <TutorialDetailPage /> },
+            ],
+          },
+          {
+            path: 'built-with',
+            children: [
+              { element: <BuiltWithPage />, index: true },
+              { path: ':id', element: <BuiltWithDetailPage /> },
             ],
           },
           {

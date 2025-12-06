@@ -50,6 +50,7 @@ export function NavList({ data }) {
             data={data.children}
             slotProps={{ rootItem: { sx: { minHeight: 36 } } }}
             sx={{
+              py: 1.5,
               px: 1.5,
               [`& .${navSectionClasses.item.root}`]: {
                 '&[aria-label="Dashboard"]': {

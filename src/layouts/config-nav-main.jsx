@@ -25,14 +25,18 @@ export const navData = [
   // },
 
   {
-    title: 'Cateogories',
-    path: '/communities',
-    icon: <Iconify width={22} icon="solar:users-group-two-rounded-bold-duotone" />,
+    title: 'Categories',
+    path: '/categories',
+    icon: <Iconify width={22} icon="solar:inbox-archive-bold" />,
     children: [
       {
         items: [
-          { title: 'Categories', path: '/communities' },
-          // { title: 'Resources', path: '/pages' },
+          { title: 'Communities', path: '/communities' },
+          { title: 'Announcements', path: '/announcements' },
+          { title: 'Questions', path: '/questions' },
+          { title: 'Tutorials', path: '/tutorials' },
+          { title: 'Built With', path: '/built-with' },
+          { title: 'All Categories', path: '/categories' },
         ],
       },
     ],
