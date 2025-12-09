@@ -49,11 +49,17 @@ export function AccountDrawer({ data = [], sx, ...other }) {
   }, []);
 
   const handleClickItem = useCallback(
-    (path) => {
+    (path, label) => {
       handleCloseDrawer();
-      router.push(path);
+
+      // If Profile is clicked, navigate to common profile page
+      if (label === 'Profile') {
+        router.push(paths.profile.root);
+      } else {
+        router.push(path);
+      }
     },
-    [handleCloseDrawer, router]
+    [handleCloseDrawer, router, user]
   );
 
   const renderAvatar = (
@@ -152,7 +158,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
               return (
                 <MenuItem
                   key={option.label}
-                  onClick={() => handleClickItem(option.label === 'Home' ? rootHref : option.href)}
+                  onClick={() => handleClickItem(option.label === 'Home' ? rootHref : option.href, option.label)}
                   sx={{
                     py: 1,
                     color: 'text.secondary',

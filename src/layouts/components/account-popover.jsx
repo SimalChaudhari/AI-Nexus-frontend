@@ -10,7 +10,7 @@ import { useRouter, usePathname } from 'src/routes/hooks';
 import { Label } from 'src/components/label';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useMockedUser, useAuthContext } from 'src/auth/hooks';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
@@ -24,11 +24,31 @@ export function AccountPopover({ data = [], sx, ...other }) {
 
   const pathname = usePathname();
 
-  const { user } = useMockedUser();
+  const { user: mockedUser } = useMockedUser();
+  const { user: authUser } = useAuthContext();
 
-  const handleClickItem = (path) => {
+  // Use auth user if available, otherwise use mocked user
+  const user = authUser || mockedUser;
+
+  // Format display name from auth user (firstname + lastname) or use existing displayName
+  const displayName = user?.displayName ||
+    (user?.firstname && user?.lastname ? `${user.firstname} ${user.lastname}` : user?.name) ||
+    user?.username ||
+    user?.email?.split('@')[0] ||
+    'User';
+
+  // Get user role for navigation
+  const userRole = user?.role || 'User';
+
+  const handleClickItem = (path, label) => {
     popover.onClose();
-    router.push(path);
+
+    // If Profile is clicked, navigate to common profile page
+    if (label === 'Profile') {
+      router.push(paths.profile.root);
+    } else {
+      router.push(path);
+    }
   };
 
   return (
@@ -37,7 +57,7 @@ export function AccountPopover({ data = [], sx, ...other }) {
         open={popover.open}
         onClick={popover.onOpen}
         photoURL={user?.photoURL}
-        displayName={user?.displayName}
+        displayName={displayName}
         sx={sx}
         {...other}
       />
@@ -53,7 +73,7 @@ export function AccountPopover({ data = [], sx, ...other }) {
       >
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {user?.displayName}
+            {displayName}
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
@@ -72,7 +92,7 @@ export function AccountPopover({ data = [], sx, ...other }) {
             return (
               <MenuItem
                 key={option.label}
-                onClick={() => handleClickItem(option.label === 'Home' ? rootHref : option.href)}
+                onClick={() => handleClickItem(option.label === 'Home' ? rootHref : option.href, option.label)}
                 sx={{
                   py: 1,
                   color: 'text.secondary',

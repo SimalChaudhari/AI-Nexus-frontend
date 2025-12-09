@@ -153,18 +153,12 @@ export const paths = {
       new: `${ROOTS.ADMIN}/user/new`,
       list: `${ROOTS.ADMIN}/user/list`,
       cards: `${ROOTS.DASHBOARD}/user/cards`,
-      profile: `${ROOTS.DASHBOARD}/user/profile`, // For regular users (User role)
+      profile: `${ROOTS.DASHBOARD}/user/profile`, // Legacy route
       account: `${ROOTS.DASHBOARD}/user/account`,
       details: (id) => `${ROOTS.ADMIN}/user/${id}`,
       edit: (id) => `${ROOTS.ADMIN}/user/${id}/edit`,
       demo: {
         edit: `${ROOTS.DASHBOARD}/user/${MOCK_ID}/edit`,
-      },
-    },
-    // Admin-specific user routes
-    admin: {
-      user: {
-        profile: `${ROOTS.ADMIN}/user/profile`, // For admin users
       },
     },
     product: {
@@ -230,14 +224,19 @@ export const paths = {
     root: ROOTS.USER,
     profile: `${ROOTS.USER}/profile`,
   },
+  // COMMON PROFILE (works for both User and Admin)
+  profile: {
+    root: '/profile',
+  },
   // ADMIN
   admin: {
     root: ROOTS.ADMIN,
+    profile: `${ROOTS.ADMIN}/profile`, // Admin profile route
     user: {
       root: `${ROOTS.ADMIN}/user`,
       new: `${ROOTS.ADMIN}/user/new`,
       list: `${ROOTS.ADMIN}/user/list`,
-      profile: `${ROOTS.ADMIN}/user/profile`,
+      profile: `${ROOTS.ADMIN}/user/profile`, // Legacy admin profile route
       details: (id) => `${ROOTS.ADMIN}/user/${id}`,
       edit: (id) => `${ROOTS.ADMIN}/user/${id}/edit`,
     },

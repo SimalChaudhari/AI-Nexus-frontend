@@ -49,3 +49,87 @@ export function useGetUser(userId) {
   );
 }
 
+// Hook for getting user profile (User role)
+export function useGetUserProfile() {
+  const [user, setUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [userError, setUserError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refresh = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setUserLoading(true);
+        setUserError(null);
+        const userData = await userService.getUserProfile();
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setUserError(error);
+        setUser(null);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [refreshKey]);
+
+  return useMemo(
+    () => ({
+      user,
+      userLoading,
+      userError,
+      userValidating: false,
+      refresh,
+    }),
+    [user, userLoading, userError, refresh]
+  );
+}
+
+// Hook for getting admin profile (Admin role)
+export function useGetAdminProfile() {
+  const [user, setUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
+  const [userError, setUserError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refresh = useCallback(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setUserLoading(true);
+        setUserError(null);
+        const userData = await userService.getAdminProfile();
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching admin profile:', error);
+        setUserError(error);
+        setUser(null);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [refreshKey]);
+
+  return useMemo(
+    () => ({
+      user,
+      userLoading,
+      userError,
+      userValidating: false,
+      refresh,
+    }),
+    [user, userLoading, userError, refresh]
+  );
+}
+

@@ -20,6 +20,7 @@ import { LanguagePopover } from '../components/language-popover';
 import { ContactsPopover } from '../components/contacts-popover';
 import { WorkspacesPopover } from '../components/workspaces-popover';
 import { NotificationsDrawer } from '../components/notifications-drawer';
+import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
@@ -76,6 +77,7 @@ export function HeaderBase({
 }) {
   const theme = useTheme();
   const pathname = usePathname();
+  const { authenticated } = useAuthContext();
 
   // Check if current route is an admin route
   const isAdminRoute = pathname?.startsWith('/admin');
@@ -177,11 +179,14 @@ export function HeaderBase({
               {/* -- Settings button -- */}
               {settings && <SettingsButton data-slot="settings" />}
 
-              {/* -- Account drawer -- */}
-              {account && <AccountDrawer data-slot="account" data={data?.account} />}
-
-              {/* -- Sign in button -- */}
-              {signIn && <SignInButton data={data?.account} />}
+              {/* -- Account drawer or Sign in button -- */}
+              {/* Show AccountDrawer if authenticated, otherwise show SignInButton */}
+              {/* SignInButton already handles showing AccountDrawer when authenticated, so we only need one */}
+              {authenticated ? (
+                account && <AccountDrawer data-slot="account" data={data?.account} />
+              ) : (
+                signIn && <SignInButton data={data?.account} />
+              )}
 
               {/* -- Purchase button -- */}
               {/* {purchase && (

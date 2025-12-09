@@ -136,5 +136,89 @@ export const userService = {
       throw error;
     }
   },
+
+  // Profile methods for User role
+  async getUserProfile() {
+    try {
+      const response = await axios.get('/users/profile');
+      const user = response.data?.data || response.data;
+      return transformUser(user);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
+      throw error;
+    }
+  },
+
+  async updateUserProfile(userData) {
+    try {
+      const response = await axios.put('/users/profile', userData);
+      const user = response.data?.user || response.data?.data || response.data;
+      return transformUser(user);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
+      throw error;
+    }
+  },
+
+  // Profile methods for Admin role
+  async getAdminProfile() {
+    try {
+      // Backend will reject if user is not Admin (403 Forbidden)
+      const response = await axios.get('/admin/profile');
+      const user = response.data?.data || response.data;
+      return transformUser(user);
+    } catch (error) {
+      console.error('Error fetching admin profile:', error);
+
+      // Handle 403 Forbidden - user doesn't have Admin role
+      if (error?.response?.status === 403 || error?.response?.status === 401) {
+        throw new Error('You do not have permission to access this resource. Admin role required.');
+      }
+
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
+      throw error;
+    }
+  },
+
+  async updateAdminProfile(userData) {
+    try {
+      // Backend will reject if user is not Admin (403 Forbidden)
+      const response = await axios.put('/admin/profile', userData);
+      const user = response.data?.user || response.data?.data || response.data;
+      return transformUser(user);
+    } catch (error) {
+      console.error('Error updating admin profile:', error);
+
+      // Handle 403 Forbidden - user doesn't have Admin role
+      if (error?.response?.status === 403 || error?.response?.status === 401) {
+        throw new Error('You do not have permission to access this resource. Admin role required.');
+      }
+
+      if (error?.message?.includes('ERR_CONNECTION_REFUSED') || error?.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to server. Please make sure the backend server is running.');
+      }
+      if (error?.message?.includes('Network Error') || !error?.response) {
+        throw new Error('Network error. Please check your internet connection and ensure the server is running.');
+      }
+      throw error;
+    }
+  },
 };
 

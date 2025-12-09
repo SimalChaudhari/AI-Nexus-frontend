@@ -49,7 +49,7 @@ export function MainLayout({ sx, data, children }) {
               account: _account,
             }}
             slotsDisplay={{
-              account: false,
+              account: true, // Enable account menu for user profile pages
               helpLink: false,
               contacts: false,
               searchbar: false,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useRouter } from 'src/routes/hooks';
+import { useRouter } from 'src/routes/hooks';
 import { useAuthContext } from 'src/auth/hooks';
 
 import Box from '@mui/material/Box';
@@ -10,7 +10,6 @@ import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
 
@@ -20,34 +19,27 @@ import { LoadingScreen } from 'src/components/loading-screen';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { useGetUser, useGetUserProfile } from 'src/actions/user';
-import { UserNewEditForm } from '../user-new-edit-form';
+import { useGetAdminProfile } from 'src/actions/user';
+import { UserNewEditForm } from '../../user/user-new-edit-form';
 
 // ----------------------------------------------------------------------
 
-export function UserProfileDetailView({ isOwnProfile = false }) {
+export function AdminProfileView() {
   const router = useRouter();
   const { user: currentAuthUser, checkUserSession } = useAuthContext();
-  const { id } = useParams();
 
-  // If it's own profile, use profile endpoint, otherwise use provided id
-  const userId = isOwnProfile ? (currentAuthUser?.id || currentAuthUser?._id) : id;
+  // Fetch admin profile data
+  const { user: fetchedUser, userLoading, userError, refresh: refreshUser } = useGetAdminProfile();
 
-  // Fetch user data - use profile endpoint for own profile, regular endpoint for others
-  const profileHook = useGetUserProfile();
-  const userHook = useGetUser(userId);
-
-  const { user: fetchedUser, userLoading, userError, refresh: refreshUser } = isOwnProfile ? profileHook : userHook;
-
-  // For own profile, prefer auth user data if available, otherwise use fetched
-  const user = isOwnProfile && currentAuthUser ? {
+  // Prefer auth user data if available, otherwise use fetched
+  const user = currentAuthUser ? {
     id: currentAuthUser.id || currentAuthUser._id,
     username: currentAuthUser.username || fetchedUser?.username,
     firstname: currentAuthUser.firstname || fetchedUser?.firstname,
     lastname: currentAuthUser.lastname || fetchedUser?.lastname,
     email: currentAuthUser.email || fetchedUser?.email,
     status: currentAuthUser.status || fetchedUser?.status || 'Active',
-    role: currentAuthUser.role || fetchedUser?.role || 'User',
+    role: currentAuthUser.role || fetchedUser?.role || 'Admin',
     isVerified: currentAuthUser.isVerified || fetchedUser?.isVerified || false,
     avatarUrl: currentAuthUser.avatarUrl || fetchedUser?.avatarUrl || null,
     phoneNumber: currentAuthUser.phoneNumber || fetchedUser?.phoneNumber,
@@ -66,31 +58,28 @@ export function UserProfileDetailView({ isOwnProfile = false }) {
       refreshUser();
     }
 
-    // If it's own profile, also update auth context and session storage
-    if (isOwnProfile) {
-      // Update session storage with new user data
-      if (updatedUser) {
-        const userStr = sessionStorage.getItem('user');
-        if (userStr) {
-          try {
-            const currentUser = JSON.parse(userStr);
-            const updatedUserData = {
-              ...currentUser,
-              ...updatedUser,
-              // Ensure status is capitalized for display
-              status: updatedUser.status ? updatedUser.status.charAt(0).toUpperCase() + updatedUser.status.slice(1) : currentUser.status,
-            };
-            sessionStorage.setItem('user', JSON.stringify(updatedUserData));
-          } catch (error) {
-            console.error('Error updating user in sessionStorage:', error);
-          }
+    // Update session storage with new user data
+    if (updatedUser) {
+      const userStr = sessionStorage.getItem('user');
+      if (userStr) {
+        try {
+          const currentUser = JSON.parse(userStr);
+          const updatedUserData = {
+            ...currentUser,
+            ...updatedUser,
+            // Ensure status is capitalized for display
+            status: updatedUser.status ? updatedUser.status.charAt(0).toUpperCase() + updatedUser.status.slice(1) : currentUser.status,
+          };
+          sessionStorage.setItem('user', JSON.stringify(updatedUserData));
+        } catch (error) {
+          console.error('Error updating user in sessionStorage:', error);
         }
       }
+    }
 
-      // Refresh auth context
-      if (checkUserSession) {
-        await checkUserSession();
-      }
+    // Refresh auth context
+    if (checkUserSession) {
+      await checkUserSession();
     }
   };
 
@@ -102,33 +91,32 @@ export function UserProfileDetailView({ isOwnProfile = false }) {
     return (
       <DashboardContent>
         <CustomBreadcrumbs
-          heading="Profile"
+          heading="Admin Profile"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: 'Admin', href: paths.admin.root },
             { name: 'Profile' },
           ]}
           sx={{ mb: { xs: 3, md: 5 } }}
         />
         <Card sx={{ p: 3 }}>
           <Typography variant="h6" color="error">
-            {userError || 'User not found'}
+            {userError || 'Admin profile not found'}
           </Typography>
         </Card>
       </DashboardContent>
     );
   }
 
-  const displayName = [user.firstname, user.lastname].filter(Boolean).join(' ') || user.name || user.username || 'User';
-  const canEdit = isOwnProfile || currentAuthUser?.role === 'Admin';
+  const displayName = [user.firstname, user.lastname].filter(Boolean).join(' ') || user.name || user.username || 'Admin';
 
   if (isEditMode) {
     return (
       <DashboardContent>
         <CustomBreadcrumbs
-          heading="Edit Profile"
+          heading="Edit Admin Profile"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
-            { name: isOwnProfile ? 'My Profile' : 'Profile', href: isOwnProfile ? paths.dashboard.user.profile : paths.admin.user.details(user.id) },
+            { name: 'Admin', href: paths.admin.root },
+            { name: 'My Profile', href: paths.admin.profile },
             { name: 'Edit' },
           ]}
           sx={{ mb: { xs: 3, md: 5 } }}
@@ -138,7 +126,7 @@ export function UserProfileDetailView({ isOwnProfile = false }) {
           onCancel={() => setIsEditMode(false)}
           onSuccess={handleEditSuccess}
           isProfileEdit
-          isAdminProfile={false}
+          isAdminProfile
         />
       </DashboardContent>
     );
@@ -147,21 +135,19 @@ export function UserProfileDetailView({ isOwnProfile = false }) {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={isOwnProfile ? 'My Profile' : 'Profile'}
+        heading="Admin Profile"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: isOwnProfile ? 'My Profile' : 'Profile' },
+          { name: 'Admin', href: paths.admin.root },
+          { name: 'My Profile' },
         ]}
         action={
-          canEdit && (
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="solar:pen-bold" />}
-              onClick={() => setIsEditMode(true)}
-            >
-              Edit Profile
-            </Button>
-          )
+          <Button
+            variant="contained"
+            startIcon={<Iconify icon="solar:pen-bold" />}
+            onClick={() => setIsEditMode(true)}
+          >
+            Edit Profile
+          </Button>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -180,7 +166,15 @@ export function UserProfileDetailView({ isOwnProfile = false }) {
             <Typography variant="h5" sx={{ mb: 0.5, fontWeight: 600 }}>
               {displayName}
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ mt: 1 }}>
+              <Label color="info" variant="soft">
+                {user.role || 'Admin'}
+              </Label>
+              <Label color={user.status === 'Active' ? 'success' : 'error'} variant="soft">
+                {user.status || 'Active'}
+              </Label>
+            </Stack>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
               {user.email}
             </Typography>
           </Box>
@@ -223,6 +217,30 @@ export function UserProfileDetailView({ isOwnProfile = false }) {
             </Typography>
             <Typography variant="body1" sx={{ fontWeight: 500 }}>
               {user.email || '-'}
+            </Typography>
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Role
+            </Typography>
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              {user.role || 'Admin'}
+            </Typography>
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Status
+            </Typography>
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              {user.status || 'Active'}
+            </Typography>
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Email Verified
+            </Typography>
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              {user.isVerified ? 'Yes' : 'No'}
             </Typography>
           </Grid>
           <Grid xs={12} sm={6}>

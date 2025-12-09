@@ -44,6 +44,9 @@ const UserDetailsPage = lazy(() => import('src/pages/dashboard/user/details'));
 const UserProfileDetailPage = lazy(() => import('src/pages/dashboard/user/profile-detail'));
 const UserProfileOwnPage = lazy(() => import('src/pages/dashboard/user/profile-own'));
 
+// Admin Profile
+const AdminProfilePage = lazy(() => import('src/pages/dashboard/admin/profile'));
+
 // Category Management (Admin only)
 const CategoryListPage = lazy(() => import('src/pages/dashboard/category/list'));
 const CategoryCreatePage = lazy(() => import('src/pages/dashboard/category/new'));
@@ -305,6 +308,7 @@ export const adminRoutes = [
       { path: 'params', element: <ParamsPage /> },
       { path: 'blank', element: <BlankPage /> },
       { path: 'settings', element: <SettingsPage /> },
+      { path: 'profile', element: <AdminProfilePage /> },
     ],
   },
 ];

@@ -21,6 +21,7 @@ import { Iconify } from 'src/components/iconify';
 import { toast } from 'src/components/snackbar';
 import { Form, Field } from 'src/components/hook-form';
 import { createUser, updateUser } from 'src/store/slices/userSlice';
+import { userService } from 'src/services/user.service';
 import { NewUserSchema, UpdateUserSchema, ProfileSchema } from 'src/validations/user.validation';
 
 // ----------------------------------------------------------------------
@@ -35,7 +36,7 @@ const normalizeStatus = (status) => {
 
 // ----------------------------------------------------------------------
 
-export function UserNewEditForm({ currentUser, onCancel, onSuccess, isProfileEdit = false }) {
+export function UserNewEditForm({ currentUser, onCancel, onSuccess, isProfileEdit = false, isAdminProfile = false }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const { creating, updating } = useSelector((state) => state.users || { creating: false, updating: false });
@@ -108,9 +109,21 @@ export function UserNewEditForm({ currentUser, onCancel, onSuccess, isProfileEdi
             return;
           }
 
-          // Update user
-          const updatedUser = await dispatch(updateUser({ id: userId, userData: backendData })).unwrap();
-          toast.success('User updated successfully!');
+          let updatedUser;
+
+          // Use appropriate service method based on profile type
+          if (isProfileEdit && isAdminProfile) {
+            // Admin profile update
+            updatedUser = await userService.updateAdminProfile(backendData);
+          } else if (isProfileEdit) {
+            // User profile update
+            updatedUser = await userService.updateUserProfile(backendData);
+          } else {
+            // Regular user update (admin managing other users)
+            updatedUser = await dispatch(updateUser({ id: userId, userData: backendData })).unwrap();
+          }
+
+          toast.success('Profile updated successfully!');
 
           // If onSuccess callback is provided, call it (for profile edit mode)
           if (onSuccess) {
