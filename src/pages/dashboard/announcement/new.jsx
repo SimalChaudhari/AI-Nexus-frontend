@@ -1,25 +1,21 @@
 import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
-import { BuiltWithDetailView } from 'src/sections/built-with/view';
+
+import { AnnouncementCreateView } from 'src/sections/dashboard/announcement/view';
 
 // ----------------------------------------------------------------------
 
-const metadata = {
-  title: `Project Details | ${CONFIG.site.name}`,
-  description: 'View project details and discussion',
-};
+const metadata = { title: `Announcement create | Dashboard - ${CONFIG.site.name}` };
 
 export default function Page() {
   return (
     <>
       <Helmet>
         <title> {metadata.title}</title>
-        <meta name="description" content={metadata.description} />
       </Helmet>
 
-      <BuiltWithDetailView />
+      <AnnouncementCreateView />
     </>
   );
 }
-

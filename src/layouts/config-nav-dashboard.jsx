@@ -96,12 +96,12 @@ export const navData = [
         ],
       },
       {
-        title: 'Community',
-        path: paths.admin.community.root,
-        icon: <Iconify icon="solar:users-group-rounded-bold-duotone" width={24} />,
+        title: 'Announcement',
+        path: paths.admin.announcement.root,
+        icon: <Iconify icon="solar:megaphone-bold-duotone" width={24} />,
         children: [
-          { title: 'List', path: paths.admin.community.list },
-          { title: 'Create', path: paths.admin.community.new },
+          { title: 'List', path: paths.admin.announcement.list },
+          { title: 'Create', path: paths.admin.announcement.new },
         ],
       },
       {

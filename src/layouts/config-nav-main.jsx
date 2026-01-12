@@ -31,11 +31,9 @@ export const navData = [
     children: [
       {
         items: [
-          { title: 'Communities', path: '/communities' },
           { title: 'Announcements', path: '/announcements' },
           { title: 'Questions', path: '/questions' },
           { title: 'Tutorials', path: '/tutorials' },
-          { title: 'Built With', path: '/built-with' },
           { title: 'All Categories', path: '/categories' },
         ],
       },

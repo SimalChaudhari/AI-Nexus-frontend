@@ -11,43 +11,134 @@ import { alpha, useTheme } from '@mui/material/styles';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { _announcements } from 'src/_mock/_announcements';
 import { Iconify } from 'src/components/iconify';
 import { AnnouncementItem } from '../announcement-item';
+import { announcementService } from 'src/services/announcement.service';
+import { toast } from 'src/components/snackbar';
+import { formatViewCount } from 'src/utils/format-view-count';
 
 // ----------------------------------------------------------------------
 
 const ITEMS_PER_PAGE = 10;
 
+  // Transform API data to component format
+const transformAnnouncement = (announcement) => {
+  const createdAt = announcement.createdAt ? new Date(announcement.createdAt) : new Date();
+  const timeDiff = Date.now() - createdAt.getTime();
+  const seconds = Math.floor(timeDiff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  let lastActivity = 'Just now';
+  if (days > 0) {
+    lastActivity = `${days}d ago`;
+  } else if (hours > 0) {
+    lastActivity = `${hours}h ago`;
+  } else if (minutes > 0) {
+    lastActivity = `${minutes}m ago`;
+  }
+
+  // Create excerpt from description (first 150 characters)
+  const description = announcement.description || '';
+  const excerpt = description.length > 150 ? `${description.substring(0, 150)}...` : description;
+
+  return {
+    id: announcement.id,
+    title: announcement.title || '',
+    description,
+    content: description,
+    excerpt,
+    views: announcement.viewCount || 0,
+    replies: announcement.comments?.length || 0,
+    comments: announcement.comments || [],
+    lastActivity,
+    createdAt,
+    participants: [], // We don't have participants in API, using empty array
+    isPinned: announcement.isPinned || false, // Get from API
+    isHighlight: false, // We don't have this in API
+  };
+};
+
 export function AnnouncementsView() {
   const theme = useTheme();
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [displayedCount, setDisplayedCount] = useState(ITEMS_PER_PAGE);
-  const [loading, setLoading] = useState(false);
   const observerTarget = useRef(null);
 
+  // Handle pin toggle
+  const handlePinToggle = useCallback((announcementId, isPinned) => {
+    setAnnouncements((prev) =>
+      prev.map((announcement) =>
+        announcement.id === announcementId
+          ? { ...announcement, isPinned }
+          : announcement
+      )
+    );
+  }, []);
+
+  // Fetch announcements from API
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        setLoading(true);
+        const data = await announcementService.getAllAnnouncements();
+        console.log('📥 Fetched announcements from API:', data);
+        // Transform API data to component format
+        const transformed = (data || []).map(transformAnnouncement);
+        const pinnedCount = transformed.filter(a => a.isPinned).length;
+        console.log(`📌 Transformed: ${pinnedCount} pinned out of ${transformed.length} total`);
+        setAnnouncements(transformed);
+      } catch (error) {
+        console.error('Error fetching announcements:', error);
+        toast.error('Failed to load announcements');
+        setAnnouncements([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
+
   // Filter announcements
-  const filteredAnnouncements = _announcements.filter((announcement) => {
+  const filteredAnnouncements = announcements.filter((announcement) => {
     const matchesSearch =
       searchQuery === '' ||
       announcement.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      announcement.content?.toLowerCase().includes(searchQuery.toLowerCase());
+      announcement.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesFilter =
-      filterType === 'all' ||
-      (filterType === 'pinned' && announcement.isPinned) ||
-      (filterType === 'highlights' && announcement.isHighlight);
+    // Filter by type: 'all' or 'pinned'
+    const matchesFilter = 
+      filterType === 'all' || 
+      (filterType === 'pinned' && announcement.isPinned);
 
     return matchesSearch && matchesFilter;
   });
 
-  // Sort: pinned first, then by date
+  // Sort: pinned first, then by date (newest first)
   const sortedAnnouncements = [...filteredAnnouncements].sort((a, b) => {
+    // Pinned announcements first
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
+    // Then by date (newest first)
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
+
+  // Debug: Log sorted announcements to verify pinned ones are first
+  useEffect(() => {
+    if (sortedAnnouncements.length > 0) {
+      const pinnedFirst = sortedAnnouncements.filter(a => a.isPinned);
+      console.log(`🔝 Sorted: ${pinnedFirst.length} pinned announcements should be at top`);
+      if (pinnedFirst.length > 0) {
+        console.log('📌 First pinned announcement:', pinnedFirst[0].title);
+      }
+    }
+  }, [sortedAnnouncements]);
 
   // Get displayed announcements
   const displayedAnnouncements = sortedAnnouncements.slice(0, displayedCount);
@@ -55,20 +146,20 @@ export function AnnouncementsView() {
 
   // Load more function
   const loadMore = useCallback(() => {
-    if (loading || !hasMore) return;
+    if (loadingMore || !hasMore) return;
 
-    setLoading(true);
+    setLoadingMore(true);
     setTimeout(() => {
       setDisplayedCount((prev) => Math.min(prev + ITEMS_PER_PAGE, sortedAnnouncements.length));
-      setLoading(false);
-    }, 2000);
-  }, [loading, hasMore, sortedAnnouncements.length]);
+      setLoadingMore(false);
+    }, 500);
+  }, [loadingMore, hasMore, sortedAnnouncements.length]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
           loadMore();
         }
       },
@@ -85,12 +176,23 @@ export function AnnouncementsView() {
         observer.unobserve(currentTarget);
       }
     };
-  }, [hasMore, loading, loadMore]);
+  }, [hasMore, loadingMore, loadMore]);
 
   // Reset displayed count when filters change
   useEffect(() => {
     setDisplayedCount(ITEMS_PER_PAGE);
   }, [searchQuery, filterType]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardContent>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <CircularProgress size={60} />
+        </Box>
+      </DashboardContent>
+    );
+  }
 
   return (
     <DashboardContent>
@@ -177,7 +279,6 @@ export function AnnouncementsView() {
               {[
                 { value: 'all', label: 'All', icon: 'solar:list-bold-duotone' },
                 { value: 'pinned', label: 'Pinned', icon: 'solar:pin-bold' },
-                { value: 'highlights', label: 'Highlights', icon: 'solar:star-bold' },
               ].map((filter) => (
                 <Button
                   key={filter.value}
@@ -220,7 +321,7 @@ export function AnnouncementsView() {
               variant="subtitle2"
               sx={{ minWidth: 70, textAlign: 'center', color: 'text.secondary' }}
             >
-              Replies
+              Comments
             </Typography>
             <Typography
               variant="subtitle2"
@@ -258,18 +359,22 @@ export function AnnouncementsView() {
           ) : (
             <>
               {displayedAnnouncements.map((announcement) => (
-                <AnnouncementItem key={announcement.id} announcement={announcement} />
+                <AnnouncementItem 
+                  key={announcement.id} 
+                  announcement={announcement} 
+                  onPinToggle={handlePinToggle}
+                />
               ))}
 
               {/* Loading indicator */}
-              {loading && (
+              {loadingMore && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress size={40} />
                 </Box>
               )}
 
               {/* Intersection observer target */}
-              {hasMore && !loading && (
+              {hasMore && !loadingMore && (
                 <Box
                   ref={observerTarget}
                   sx={{
@@ -288,11 +393,9 @@ export function AnnouncementsView() {
         <Box sx={{ mt: 3, textAlign: 'center' }}>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Showing {displayedAnnouncements.length} of {sortedAnnouncements.length} announcements
-            {sortedAnnouncements.length !== _announcements.length && ` (${_announcements.length} total)`}
           </Typography>
         </Box>
       </Box>
     </DashboardContent>
   );
 }
-

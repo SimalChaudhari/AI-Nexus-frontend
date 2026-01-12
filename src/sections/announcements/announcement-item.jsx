@@ -1,24 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { RouterLink } from 'src/routes/components';
 import { Iconify } from 'src/components/iconify';
 import { UserProfilePopover } from 'src/components/user-profile-popover';
+import { formatViewCount } from 'src/utils/format-view-count';
+import { useAuthContext } from 'src/auth/hooks';
+import { announcementService } from 'src/services/announcement.service';
+import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
 
-export function AnnouncementItem({ announcement }) {
+export function AnnouncementItem({ announcement, onPinToggle }) {
   const theme = useTheme();
+  const { authenticated } = useAuthContext();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isPinned, setIsPinned] = useState(announcement.isPinned || false);
+  const [isPinning, setIsPinning] = useState(false);
+
+  // Sync isPinned state when announcement prop changes (e.g., after page refresh)
+  useEffect(() => {
+    setIsPinned(announcement.isPinned || false);
+  }, [announcement.isPinned]);
+
+  const handlePinToggle = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isPinning) return;
+
+    try {
+      setIsPinning(true);
+      const result = await announcementService.togglePinAnnouncement(announcement.id);
+      setIsPinned(result.pinned);
+
+      if (onPinToggle) {
+        onPinToggle(announcement.id, result.pinned);
+      }
+
+      toast.success(result.message);
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+      toast.error(error?.response?.data?.message || 'Failed to toggle pin');
+    } finally {
+      setIsPinning(false);
+    }
+  };
 
   const getTypeIcon = () => {
-    if (announcement.isPinned) {
+    if (isPinned) {
       return <Iconify icon="solar:pin-bold" width={16} sx={{ color: 'error.main' }} />;
     }
     if (announcement.isHighlight) {
@@ -69,6 +107,27 @@ export function AnnouncementItem({ announcement }) {
               {announcement.title}
             </Typography>
           </Box>
+          {authenticated && (
+            <Tooltip title={isPinned ? 'Unpin announcement' : 'Pin announcement'}>
+              <IconButton
+                size="small"
+                onClick={handlePinToggle}
+                disabled={isPinning}
+                sx={{
+                  color: isPinned ? 'error.main' : 'text.secondary',
+                  '&:hover': {
+                    color: isPinned ? 'error.dark' : 'primary.main',
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                  },
+                }}
+              >
+                <Iconify
+                  icon={isPinned ? "solar:pin-bold" : "solar:pin-outline"}
+                  width={18}
+                />
+              </IconButton>
+            </Tooltip>
+          )}
         </Stack>
 
         {(announcement.excerpt || announcement.content) && (
@@ -88,47 +147,51 @@ export function AnnouncementItem({ announcement }) {
             }}
           >
             {isExpanded ? announcement.content : announcement.excerpt}{' '}
-            <Box
-              component="span"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-              sx={{
-                color: 'primary.main',
-                fontWeight: 500,
-                cursor: 'pointer',
-                '&:hover': { textDecoration: 'underline' },
-              }}
-            >
-              {isExpanded ? 'show less' : 'read more'}
-            </Box>
+            {announcement.content && announcement.content.length > 150 && (
+              <Box
+                component="span"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                {isExpanded ? 'show less' : 'read more'}
+              </Box>
+            )}
           </Typography>
         )}
 
-        {/* Participants */}
-        <AvatarGroup
-          max={5}
-          sx={{
-            '& .MuiAvatar-root': {
-              width: 24,
-              height: 24,
-              fontSize: '0.75rem',
-              border: `2px solid ${theme.palette.background.paper}`,
-            },
-          }}
-        >
-          {announcement.participants.map((participant) => (
-            <UserProfilePopover key={participant.id} user={participant}>
-              <Avatar
-                alt={participant.name}
-                src={participant.avatarUrl}
-                sx={{ width: 24, height: 24 }}
-              />
-            </UserProfilePopover>
-          ))}
-        </AvatarGroup>
+        {/* Participants - Only show if we have participants */}
+        {announcement.participants && announcement.participants.length > 0 && (
+          <AvatarGroup
+            max={5}
+            sx={{
+              '& .MuiAvatar-root': {
+                width: 24,
+                height: 24,
+                fontSize: '0.75rem',
+                border: `2px solid ${theme.palette.background.paper}`,
+              },
+            }}
+          >
+            {announcement.participants.map((participant) => (
+              <UserProfilePopover key={participant.id} user={participant}>
+                <Avatar
+                  alt={participant.name}
+                  src={participant.avatarUrl}
+                  sx={{ width: 24, height: 24 }}
+                />
+              </UserProfilePopover>
+            ))}
+          </AvatarGroup>
+        )}
       </Box>
 
       {/* Replies Column */}
@@ -170,7 +233,7 @@ export function AnnouncementItem({ announcement }) {
             fontSize: '1rem',
           }}
         >
-          {announcement.views}
+          {formatViewCount(announcement.views)}
         </Typography>
         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
           Views

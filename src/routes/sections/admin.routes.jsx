@@ -53,11 +53,11 @@ const CategoryCreatePage = lazy(() => import('src/pages/dashboard/category/new')
 const CategoryEditPage = lazy(() => import('src/pages/dashboard/category/edit'));
 const CategoryDetailsPage = lazy(() => import('src/pages/dashboard/category/details'));
 
-// Community Management (Admin only)
-const CommunityListPage = lazy(() => import('src/pages/dashboard/community/list'));
-const CommunityCreatePage = lazy(() => import('src/pages/dashboard/community/new'));
-const CommunityEditPage = lazy(() => import('src/pages/dashboard/community/edit'));
-const CommunityDetailsPage = lazy(() => import('src/pages/dashboard/community/details'));
+// Announcement Management (Admin only)
+const AnnouncementListPage = lazy(() => import('src/pages/dashboard/announcement/list'));
+const AnnouncementCreatePage = lazy(() => import('src/pages/dashboard/announcement/new'));
+const AnnouncementEditPage = lazy(() => import('src/pages/dashboard/announcement/edit'));
+const AnnouncementDetailsPage = lazy(() => import('src/pages/dashboard/announcement/details'));
 
 // Course Management (Admin only)
 const CourseListPage = lazy(() => import('src/pages/dashboard/course/list'));
@@ -192,13 +192,13 @@ export const adminRoutes = [
         ],
       },
       {
-        path: 'community',
+        path: 'announcement',
         children: [
-          { element: <CommunityListPage />, index: true },
-          { path: 'list', element: <CommunityListPage /> },
-          { path: 'new', element: <CommunityCreatePage /> },
-          { path: ':id', element: <CommunityDetailsPage /> },
-          { path: ':id/edit', element: <CommunityEditPage /> },
+          { element: <AnnouncementListPage />, index: true },
+          { path: 'list', element: <AnnouncementListPage /> },
+          { path: 'new', element: <AnnouncementCreatePage /> },
+          { path: ':id', element: <AnnouncementDetailsPage /> },
+          { path: ':id/edit', element: <AnnouncementEditPage /> },
         ],
       },
       {

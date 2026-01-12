@@ -27,7 +27,6 @@ export const paths = {
   contact: '/contact-us',
   faqs: '/faqs',
   categories: '/categories',
-  communities: '/communities',
   announcements: '/announcements',
   announcement: {
     root: '/announcements',
@@ -42,11 +41,6 @@ export const paths = {
   tutorial: {
     root: '/tutorials',
     details: (id) => `/tutorials/${id}`,
-  },
-  builtWith: '/built-with',
-  builtWithProject: {
-    root: '/built-with',
-    details: (id) => `/built-with/${id}`,
   },
   home: '/home',
   learning: '/learning',
@@ -247,12 +241,12 @@ export const paths = {
       details: (id) => `${ROOTS.ADMIN}/category/${id}`,
       edit: (id) => `${ROOTS.ADMIN}/category/${id}/edit`,
     },
-    community: {
-      root: `${ROOTS.ADMIN}/community`,
-      new: `${ROOTS.ADMIN}/community/new`,
-      list: `${ROOTS.ADMIN}/community/list`,
-      details: (id) => `${ROOTS.ADMIN}/community/${id}`,
-      edit: (id) => `${ROOTS.ADMIN}/community/${id}/edit`,
+    announcement: {
+      root: `${ROOTS.ADMIN}/announcement`,
+      new: `${ROOTS.ADMIN}/announcement/new`,
+      list: `${ROOTS.ADMIN}/announcement/list`,
+      details: (id) => `${ROOTS.ADMIN}/announcement/${id}`,
+      edit: (id) => `${ROOTS.ADMIN}/announcement/${id}/edit`,
     },
     course: {
       root: `${ROOTS.ADMIN}/course`,
