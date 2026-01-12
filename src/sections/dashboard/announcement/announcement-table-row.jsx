@@ -1,9 +1,6 @@
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import Chip from '@mui/material/Chip';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
@@ -23,7 +20,7 @@ import { RouterLink } from 'src/routes/components';
 
 // ----------------------------------------------------------------------
 
-export function CommunityTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }) {
+export function AnnouncementTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }) {
   const router = useRouter();
   const confirm = useBoolean();
   const popover = usePopover();
@@ -36,64 +33,25 @@ export function CommunityTableRow({ row, selected, onEditRow, onSelectRow, onDel
         </TableCell>
 
         <TableCell>
-          <Stack spacing={2} direction="row" alignItems="center">
-            {row.smallImage ? (
-              <Avatar
-                alt={row.title}
-                src={row.smallImage}
-                variant="rounded"
-                sx={{ width: 48, height: 48 }}
-              />
-            ) : (
-              <Avatar variant="rounded" sx={{ width: 48, height: 48 }}>
-                {row.title?.[0]?.toUpperCase()}
-              </Avatar>
-            )}
-
-            <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
-              <Link
-                component={RouterLink}
-                href={paths.admin.community.details(row.id)}
-                color="inherit"
-                sx={{ cursor: 'pointer' }}
-              >
-                {row.title}
-              </Link>
-              <Box component="span" sx={{ color: 'text.disabled', fontSize: '0.875rem' }}>
-                {row.category?.title || row.categories?.[0]?.title || '-'}
-              </Box>
-            </Stack>
+          <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
+            <Link
+              component={RouterLink}
+              href={paths.admin.announcement.details(row.id)}
+              color="inherit"
+              sx={{ cursor: 'pointer' }}
+            >
+              {row.title}
+            </Link>
+            <Box component="span" sx={{ color: 'text.disabled', fontSize: '0.875rem' }}>
+              {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : ''}
+            </Box>
           </Stack>
         </TableCell>
 
         <TableCell>
-          <Chip
-            label={row.pricingType || 'free'}
-            color={row.pricingType === 'paid' ? 'primary' : 'success'}
-            size="small"
-          />
-        </TableCell>
-
-        <TableCell>
-          {row.pricingType === 'paid' && row.amount ? `$${parseFloat(row.amount).toFixed(2)}` : 'Free'}
-        </TableCell>
-
-        <TableCell>
-          {row.category ? (
-            <Chip
-              label={row.category.title || row.category}
-              size="small"
-              variant="outlined"
-            />
-          ) : row.categories?.[0] ? (
-            <Chip
-              label={row.categories[0].title || row.categories[0]}
-              size="small"
-              variant="outlined"
-            />
-          ) : (
-            '-'
-          )}
+          <Box component="span" sx={{ color: 'text.secondary' }}>
+            {row.viewCount || 0} views
+          </Box>
         </TableCell>
 
         <TableCell>
@@ -114,7 +72,7 @@ export function CommunityTableRow({ row, selected, onEditRow, onSelectRow, onDel
         <MenuList>
           <MenuItem
             onClick={() => {
-              router.push(paths.admin.community.details(row.id));
+              router.push(paths.admin.announcement.details(row.id));
               popover.onClose();
             }}
           >
@@ -149,14 +107,23 @@ export function CommunityTableRow({ row, selected, onEditRow, onSelectRow, onDel
         open={confirm.value}
         onClose={confirm.onFalse}
         title="Delete"
-        content="Are you sure want to delete?"
+        content={
+          <>
+            Are you sure want to delete <strong> {row.title} </strong>?
+          </>
+        }
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
-            Delete
-          </Button>
+          <IconButton
+            color="error"
+            onClick={() => {
+              onDeleteRow();
+              confirm.onFalse();
+            }}
+          >
+            <Iconify icon="solar:trash-bin-trash-bold" />
+          </IconButton>
         }
       />
     </>
   );
 }
-

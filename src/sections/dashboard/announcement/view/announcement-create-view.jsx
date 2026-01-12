@@ -4,25 +4,24 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-import { CommunityNewEditForm } from '../community-new-edit-form';
+import { AnnouncementNewEditForm } from '../announcement-new-edit-form';
 
 // ----------------------------------------------------------------------
 
-export function CommunityEditView({ community: currentCommunity }) {
+export function AnnouncementCreateView() {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading="Edit"
+        heading="Create a new announcement"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Community', href: paths.admin.community.list },
-          { name: currentCommunity?.title },
+          { name: 'Announcement', href: paths.admin.announcement.root },
+          { name: 'New announcement' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <CommunityNewEditForm currentCommunity={currentCommunity} />
+      <AnnouncementNewEditForm />
     </DashboardContent>
   );
 }
-

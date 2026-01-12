@@ -2,8 +2,6 @@ import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
@@ -18,10 +16,8 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
-import { varAlpha } from 'src/theme/styles';
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
@@ -40,44 +36,58 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { fetchCommunities, deleteCommunity } from 'src/store/slices/communitySlice';
-import { fetchCategories } from 'src/store/slices/categorySlice';
-import { CommunityTableRow } from '../community-table-row';
-import { CommunityTableToolbar } from '../community-table-toolbar';
-import { CommunityTableFiltersResult } from '../community-table-filters-result';
+import { fetchAnnouncements, deleteAnnouncement } from 'src/store/slices/announcementSlice';
+import { AnnouncementTableRow } from '../announcement-table-row';
+import { AnnouncementTableToolbar } from '../announcement-table-toolbar';
+import { AnnouncementTableFiltersResult } from '../announcement-table-filters-result';
 
 // ----------------------------------------------------------------------
 
-const PRICING_OPTIONS = [
-  { value: 'all', label: 'All' },
-  { value: 'free', label: 'Free' },
-  { value: 'paid', label: 'Paid' },
-];
-
 const TABLE_HEAD = [
   { id: 'title', label: 'Title' },
-  { id: 'pricingType', label: 'Pricing', width: 120 },
-  { id: 'amount', label: 'Amount', width: 120 },
-  { id: 'categories', label: 'Categories', width: 200 },
+  { id: 'viewCount', label: 'Views', width: 120 },
   { id: 'action', label: 'Action', width: 88 },
 ];
 
 // ----------------------------------------------------------------------
 
-export function CommunityListView() {
+function applyFilter({ inputData, comparator, filters }) {
+  const { name } = filters;
+
+  const stabilizedThis = inputData.map((el, index) => [el, index]);
+
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+
+  inputData = stabilizedThis.map((el) => el[0]);
+
+  if (name) {
+    inputData = inputData.filter(
+      (announcement) =>
+        announcement.title?.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        announcement.description?.toLowerCase().indexOf(name.toLowerCase()) !== -1
+    );
+  }
+
+  return inputData;
+}
+
+// ----------------------------------------------------------------------
+
+export function AnnouncementListView() {
   const dispatch = useDispatch();
-  const { communities: tableData, loading } = useSelector((state) => state.communities);
-  const { categories } = useSelector((state) => state.categories);
+  const { announcements: tableData, loading } = useSelector((state) => state.announcements);
   const table = useTable();
   const router = useRouter();
   const confirm = useBoolean();
 
-  const filters = useSetState({ name: '', pricingType: 'all', categoryIds: [] });
+  const filters = useSetState({ name: '' });
 
-  // Fetch communities and categories from Redux store
   useEffect(() => {
-    dispatch(fetchCommunities());
-    dispatch(fetchCategories());
+    dispatch(fetchAnnouncements());
   }, [dispatch]);
 
   const dataFiltered = applyFilter({
@@ -88,18 +98,18 @@ export function CommunityListView() {
 
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
-  const canReset = !!filters.state.name || filters.state.pricingType !== 'all' || (filters.state.categoryIds && filters.state.categoryIds.length > 0);
+  const canReset = !!filters.state.name;
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleDeleteRow = useCallback(
     async (id) => {
       try {
-        await dispatch(deleteCommunity(id)).unwrap();
+        await dispatch(deleteAnnouncement(id)).unwrap();
         toast.success('Delete success!');
         table.onUpdatePageDeleteRow(dataInPage.length);
       } catch (error) {
-        toast.error(error || 'Failed to delete community');
+        toast.error(error || 'Failed to delete announcement');
       }
     },
     [dataInPage.length, dispatch, table]
@@ -107,7 +117,7 @@ export function CommunityListView() {
 
   const handleDeleteRows = useCallback(async () => {
     try {
-      const deletePromises = table.selected.map((id) => dispatch(deleteCommunity(id)).unwrap());
+      const deletePromises = table.selected.map((id) => dispatch(deleteAnnouncement(id)).unwrap());
       await Promise.all(deletePromises);
       toast.success('Delete success!');
       table.onUpdatePageDeleteRows({
@@ -115,23 +125,15 @@ export function CommunityListView() {
         totalRowsFiltered: dataFiltered.length,
       });
     } catch (error) {
-      toast.error(error || 'Failed to delete communities');
+      toast.error(error || 'Failed to delete announcements');
     }
   }, [dataFiltered.length, dataInPage.length, dispatch, table]);
 
   const handleEditRow = useCallback(
     (id) => {
-      router.push(paths.admin.community.edit(id));
+      router.push(paths.admin.announcement.edit(id));
     },
     [router]
-  );
-
-  const handleFilterPricingType = useCallback(
-    (event, newValue) => {
-      filters.setState({ pricingType: newValue });
-      table.onResetPage();
-    },
-    [filters, table]
   );
 
   if (loading) {
@@ -145,65 +147,28 @@ export function CommunityListView() {
           heading="List"
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Community', href: paths.admin.community.list },
+            { name: 'Announcement', href: paths.admin.announcement.list },
             { name: 'List' },
           ]}
           action={
             <Button
               component={RouterLink}
-              href={paths.admin.community.new}
+              href={paths.admin.announcement.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New community
+              New announcement
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
         <Card>
-          <Tabs
-            value={filters.state.pricingType}
-            onChange={handleFilterPricingType}
-            sx={{
-              px: 2.5,
-              boxShadow: (theme) =>
-                `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
-            }}
-          >
-            {PRICING_OPTIONS.map((tab) => (
-              <Tab
-                key={tab.value}
-                iconPosition="end"
-                value={tab.value}
-                label={tab.label}
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.state.pricingType) && 'filled') ||
-                      'soft'
-                    }
-                    color={
-                      (tab.value === 'free' && 'success') ||
-                      (tab.value === 'paid' && 'warning') ||
-                      'default'
-                    }
-                  >
-                    {tab.value === 'all'
-                      ? tableData.length
-                      : tableData.filter((community) => community.pricingType === tab.value).length}
-                  </Label>
-                }
-              />
-            ))}
-          </Tabs>
-
-          <CommunityTableToolbar filters={filters} categories={categories} onResetPage={table.onResetPage} />
+          <AnnouncementTableToolbar filters={filters} onResetPage={table.onResetPage} />
 
           {canReset && (
-            <CommunityTableFiltersResult
+            <AnnouncementTableFiltersResult
               filters={filters}
-              categories={categories}
               totalResults={dataFiltered.length}
               onResetPage={table.onResetPage}
               sx={{ p: 2.5, pt: 0 }}
@@ -254,7 +219,7 @@ export function CommunityListView() {
                       table.page * table.rowsPerPage + table.rowsPerPage
                     )
                     .map((row) => (
-                      <CommunityTableRow
+                      <AnnouncementTableRow
                         key={row.id}
                         row={row}
                         selected={table.selected.includes(row.id)}
@@ -265,24 +230,24 @@ export function CommunityListView() {
                     ))}
 
                   <TableEmptyRows
-                    height={table.dense ? 56 : 56 + 20}
+                    height={table.dense ? 52 : 72}
                     emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
                   />
 
-                  <TableNoData notFound={notFound} />
+                  {notFound && <TableNoData notFound={notFound} />}
                 </TableBody>
               </Table>
             </Scrollbar>
           </Box>
 
           <TablePaginationCustom
-            page={table.page}
-            dense={table.dense}
             count={dataFiltered.length}
+            page={table.page}
             rowsPerPage={table.rowsPerPage}
             onPageChange={table.onChangePage}
-            onChangeDense={table.onChangeDense}
             onRowsPerPageChange={table.onChangeRowsPerPage}
+            dense={table.dense}
+            onChangeDense={table.onChangeDense}
           />
         </Card>
       </DashboardContent>
@@ -297,62 +262,11 @@ export function CommunityListView() {
           </>
         }
         action={
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              handleDeleteRows();
-              confirm.onFalse();
-            }}
-          >
-            Delete
-          </Button>
+          <IconButton color="error" onClick={handleDeleteRows}>
+            <Iconify icon="solar:trash-bin-trash-bold" />
+          </IconButton>
         }
       />
     </>
   );
 }
-
-// ----------------------------------------------------------------------
-
-function applyFilter({ inputData, comparator, filters }) {
-  const { name, pricingType, categoryIds } = filters;
-
-  const stabilizedThis = inputData.map((el, index) => [el, index]);
-
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-
-  inputData = stabilizedThis.map((el) => el[0]);
-
-  // Filter by name
-  if (name) {
-    inputData = inputData.filter(
-      (community) =>
-        community.title.toLowerCase().indexOf(name.toLowerCase()) !== -1
-    );
-  }
-
-  // Filter by pricing type
-  if (pricingType && pricingType !== 'all') {
-    inputData = inputData.filter(
-      (community) => community.pricingType === pricingType
-    );
-  }
-
-  // Filter by categories
-  if (categoryIds && categoryIds.length > 0) {
-    inputData = inputData.filter((community) => {
-      // Check single category first, then fallback to categories array for backward compatibility
-      const communityCategoryId = community.category?.id || community.categoryId ||
-        (community.categories?.[0]?.id || community.categories?.[0]);
-      return communityCategoryId && categoryIds.includes(communityCategoryId);
-    });
-  }
-
-  return inputData;
-}
-
